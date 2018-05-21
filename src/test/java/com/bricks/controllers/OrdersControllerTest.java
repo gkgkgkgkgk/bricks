@@ -11,10 +11,13 @@ import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -138,6 +141,41 @@ public class OrdersControllerTest {
                 // Then no order details returned
                 .andExpect(status().isOk()).andExpect(content().string(""));
         
+    }
+    
+    @Test
+    public void testDispatchOrder() throws Exception {
+        //Given customer has submitted an order for some bricks
+        MvcResult result = this.mockMvc.perform(post("/orders").param("name", "junitget").param("quantity", "200"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").isNotEmpty())
+                .andExpect(jsonPath("$.id").isNumber())
+                .andReturn();
+        
+        Order order = getOrder(result.getResponse().getContentAsString());
+        
+        //When An "Fulfil Order" request for an existing order reference
+        result = this.mockMvc.perform(patch("/orders/" + order.getId().toString() + "/dispatch"))
+                .andExpect(status().isOk())
+                //Then An Order reference is returned
+                .andExpect(jsonPath("$.id").isNotEmpty())
+                .andExpect(jsonPath("$.id").isNumber())
+                .andReturn();
+        
+        Order updatedOrder = getOrder(result.getResponse().getContentAsString());
+        
+        assertEquals(order.getId(), updatedOrder.getId());
+        assertEquals(order.getName(), "junitget");
+        assertEquals(order.getQuantity().toString(), "200");
+        assertFalse(order.isDispatched());
+        assertTrue(updatedOrder.isDispatched());
+        
+        //When An "Fulfil Order" request for invalid order reference
+        this.mockMvc.perform(patch("/orders/1234/dispatch"))
+                .andExpect(status().isBadRequest())
+                //Then An empty Order reference is returned
+                .andExpect(content().string(""));
+
     }
     
     private List<Order> getOrders(String content) throws IOException {

@@ -58,4 +58,17 @@ public class OrdersService {
     public void updateOrder(Order order) {
         orders.put(order.getId(), order);
     }
+    
+    /**
+     * To set dispatch flag to true
+     * @param id
+     * @return 
+     */
+    public Order dispatchOrder(Long id) {
+        Order order = orders.get(id);
+        if(order != null) {
+            order.setDispatched(true);
+        }
+        return order;
+    }
 }

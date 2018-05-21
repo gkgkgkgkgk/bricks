@@ -16,6 +16,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -101,5 +102,23 @@ public class OrdersServiceTest {
         assertEquals(order.getId(), orderReturned.getId());
         assertEquals("test1", orderReturned.getName());
         assertEquals("200", orderReturned.getQuantity().toString());
+    }
+    
+    @Test
+    public void testDispatchOrder() throws Exception {
+        OrdersService ordersService = new OrdersService();
+        
+        //Given 
+        Order order = ordersService.createOrder("test", 100);
+        
+        //When
+        ordersService.dispatchOrder(order.getId());
+        
+        //Then
+        Order orderReturned = ordersService.getOrder(order.getId());
+        assertEquals(order.getId(), orderReturned.getId());
+        assertEquals("test", orderReturned.getName());
+        assertEquals("100", orderReturned.getQuantity().toString());
+        assertTrue(order.isDispatched());
     }
 }
