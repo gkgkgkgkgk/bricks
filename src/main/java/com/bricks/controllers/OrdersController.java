@@ -49,9 +49,13 @@ public class OrdersController {
     public Order put(@RequestParam(value="id", required=true) Long id, @RequestParam(value="name", required=true) String name, @RequestParam(value="quantity", required=true) Integer quantity) {
         Order order = ordersService.getOrder(id);
         if (order != null) {
-            order.setName(name);
-            order.setQuantity(quantity);
-            ordersService.updateOrder(order);
+            if (order.isDispatched()) {
+                throw new BadRequestException("Order is dispatched - No changes accepted");
+            } else {
+                order.setName(name);
+                order.setQuantity(quantity);
+                ordersService.updateOrder(order);
+            }
         } 
         return order;
     }
