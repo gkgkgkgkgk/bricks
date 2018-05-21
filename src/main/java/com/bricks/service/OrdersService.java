@@ -22,18 +22,40 @@ public class OrdersService {
     private final Map<Long, Order> orders = new HashMap<>();
     private final AtomicLong counter = new AtomicLong();
     
+    /**
+     * To create an order
+     * @param name
+     * @param quantity
+     * @return created order
+     */
     public Order createOrder(String name, Integer quantity) {
         Order order = new Order(counter.incrementAndGet(), name, quantity);
         orders.put(order.getId(), order);
         return order;
     }
     
+    /**
+     * To get an order for the given id
+     * @param id
+     * @return order if found otherwise null
+     */
     public Order getOrder(Long id) {
         return orders.get(id);
     }
     
+    /**
+     * To get all existing orders
+     * @return collection
+     */
     public Collection<Order> getAllOrders() {
         return orders.values();
     }
     
+    /**
+     * To update an existing order
+     * @param order 
+     */
+    public void updateOrder(Order order) {
+        orders.put(order.getId(), order);
+    }
 }

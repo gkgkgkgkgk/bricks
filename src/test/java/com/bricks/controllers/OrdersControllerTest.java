@@ -13,6 +13,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -103,6 +104,40 @@ public class OrdersControllerTest {
                 allOf(hasProperty("id", equalTo(3l)), hasProperty("name", is("junitget2")), hasProperty("quantity", is(600)))
                 )
         );
+    }
+    
+    @Test
+    public void testUpdateOrder() throws Exception {
+        //Given customer has submitted an order for some bricks
+        MvcResult result = this.mockMvc.perform(post("/orders").param("name", "junitget").param("quantity", "200"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").isNotEmpty())
+                .andExpect(jsonPath("$.id").isNumber())
+                .andReturn();
+        
+        Order order = getOrder(result.getResponse().getContentAsString());
+        
+        //When An "Update Order" request for an existing order reference and a number of bricks is submitted
+        result = this.mockMvc.perform(put("/orders").param("id", order.getId().toString()).param("name", "junitget11").param("quantity", "300"))
+                .andExpect(status().isOk())
+                //Then An Order reference is returned
+                .andExpect(jsonPath("$.id").isNotEmpty())
+                .andExpect(jsonPath("$.id").isNumber())
+                .andReturn();
+        
+        Order updatedOrder = getOrder(result.getResponse().getContentAsString());
+        
+        assertEquals(order.getId(), updatedOrder.getId());
+        assertEquals(order.getName(), "junitget");
+        assertEquals(updatedOrder.getName(), "junitget11");
+        assertEquals(order.getQuantity().toString(), "200");
+        assertEquals(updatedOrder.getQuantity().toString(), "300");
+        
+        //When An "Update Order" request for invalid order reference and a number of bricks is submitted
+        this.mockMvc.perform(put("/orders").param("id", "1234").param("name", "junitget11").param("quantity", "300"))
+                // Then no order details returned
+                .andExpect(status().isOk()).andExpect(content().string(""));
+        
     }
     
     private List<Order> getOrders(String content) throws IOException {

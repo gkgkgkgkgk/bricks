@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -38,5 +39,14 @@ public class OrdersController {
         return ordersService.createOrder(name, quantity);
     }
     
-    
+    @PutMapping
+    public Order put(@RequestParam(value="id", required=true) Long id, @RequestParam(value="name", required=true) String name, @RequestParam(value="quantity", required=true) Integer quantity) {
+        Order order = ordersService.getOrder(id);
+        if (order != null) {
+            order.setName(name);
+            order.setQuantity(quantity);
+            ordersService.updateOrder(order);
+        } 
+        return order;
+    }
 }

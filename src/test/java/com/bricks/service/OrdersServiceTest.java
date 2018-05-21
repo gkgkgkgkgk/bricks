@@ -84,4 +84,22 @@ public class OrdersServiceTest {
         );
     }
 
+    @Test
+    public void testUpdateOrder() throws Exception {
+        OrdersService ordersService = new OrdersService();
+        
+        //Given 
+        Order order = ordersService.createOrder("test", 100);
+        
+        //When
+        order.setName("test1");
+        order.setQuantity(200);
+        ordersService.updateOrder(order);
+        
+        //Then
+        Order orderReturned = ordersService.getOrder(order.getId());
+        assertEquals(order.getId(), orderReturned.getId());
+        assertEquals("test1", orderReturned.getName());
+        assertEquals("200", orderReturned.getQuantity().toString());
+    }
 }
